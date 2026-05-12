@@ -1,0 +1,360 @@
+/* ===== ベース ===== */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 "Hiragino Sans", "Yu Gothic", sans-serif;
+    background: radial-gradient(ellipse at center, #1a1040 0%, #05020e 70%);
+    color: #f0e9ff;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* 背景の星 */
+.stars {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background-image:
+        radial-gradient(2px 2px at 20% 30%, #fff, transparent),
+        radial-gradient(1px 1px at 80% 10%, #fff, transparent),
+        radial-gradient(1px 1px at 40% 70%, #fff, transparent),
+        radial-gradient(2px 2px at 90% 60%, #fff, transparent),
+        radial-gradient(1px 1px at 50% 50%, #fff, transparent),
+        radial-gradient(1px 1px at 10% 80%, #fff, transparent),
+        radial-gradient(2px 2px at 70% 90%, #fff, transparent);
+    background-size: 100% 100%;
+    opacity: 0.6;
+    animation: twinkle 4s ease-in-out infinite alternate;
+}
+@keyframes twinkle {
+    from { opacity: 0.3; }
+    to   { opacity: 0.8; }
+}
+
+header {
+    text-align: center;
+    padding: 30px 20px 20px;
+    position: relative;
+    z-index: 1;
+}
+header h1 {
+    font-size: 2.4em;
+    background: linear-gradient(90deg, #ffd700, #ff6ec7, #7ddfff, #ffd700);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 4s linear infinite;
+    text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+    letter-spacing: 0.05em;
+}
+@keyframes shimmer {
+    to { background-position: -200% 0; }
+}
+.subtitle {
+    color: #7a6a9a;
+    margin-top: 8px;
+    font-size: 0.85em;
+    letter-spacing: 0.2em;
+}
+
+main {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 30px;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== ガチャエリア ===== */
+#gacha-area {
+    background: rgba(20, 12, 40, 0.6);
+    border: 1px solid rgba(155, 100, 255, 0.2);
+    border-radius: 16px;
+    padding: 30px;
+    backdrop-filter: blur(8px);
+}
+
+#stage {
+    position: relative;
+    height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* カプセル */
+#capsule {
+    position: relative;
+    width: 140px;
+    height: 200px;
+    transition: opacity 0.4s;
+}
+.capsule-top, .capsule-bottom {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: linear-gradient(135deg, #ff6ec7, #b366ff);
+    box-shadow: inset -10px -10px 30px rgba(0,0,0,0.3),
+                inset 10px 10px 30px rgba(255,255,255,0.3);
+    transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+.capsule-top {
+    top: 0;
+    border-radius: 70px 70px 0 0;
+}
+.capsule-bottom {
+    bottom: 0;
+    border-radius: 0 0 70px 70px;
+    background: linear-gradient(135deg, #7ddfff, #4a8cff);
+}
+.capsule-shine {
+    position: absolute;
+    top: 20px;
+    left: 30px;
+    width: 30px;
+    height: 60px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 50%;
+    filter: blur(8px);
+}
+
+#capsule.idle {
+    animation: float 2s ease-in-out infinite alternate;
+}
+@keyframes float {
+    to { transform: translateY(-12px); }
+}
+
+#capsule.spinning {
+    animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+#capsule.opening .capsule-top {
+    transform: translateY(-100px) rotate(-20deg);
+}
+#capsule.opening .capsule-bottom {
+    transform: translateY(100px) rotate(20deg);
+}
+
+/* バースト光 */
+#burst {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle, transparent 30%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+#burst.active {
+    opacity: 1;
+    animation: burst 1.5s ease-out;
+}
+@keyframes burst {
+    0%   { transform: scale(0.3); opacity: 0; }
+    50%  { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(2.5); opacity: 0; }
+}
+
+/* 結果表示 */
+#result {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: opacity 0.4s, transform 0.4s;
+    pointer-events: none;
+}
+#result.hidden {
+    opacity: 0;
+    transform: scale(0.6);
+}
+#result.show {
+    opacity: 1;
+    transform: scale(1);
+    animation: pop 0.6s cubic-bezier(0.5, 0, 0.5, 1.5);
+}
+@keyframes pop {
+    0%   { transform: scale(0.3); opacity: 0; }
+    60%  { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); }
+}
+
+.rarity-badge {
+    font-size: 1.4em;
+    font-weight: bold;
+    padding: 6px 24px;
+    border-radius: 20px;
+    letter-spacing: 0.15em;
+}
+.item-name {
+    font-size: 2em;
+    font-weight: bold;
+    text-shadow: 0 0 20px currentColor;
+}
+
+/* レアリティ色 */
+.r-n   { color: #aaa;     }
+.r-r   { color: #6fb3ff;  }
+.r-sr  { color: #c878ff;  }
+.r-ssr { color: #ffd700;  }
+
+.rarity-badge.r-n   { background: #555; color: #ddd; }
+.rarity-badge.r-r   { background: linear-gradient(90deg, #4a8cff, #6fb3ff); color: #fff; }
+.rarity-badge.r-sr  { background: linear-gradient(90deg, #a050ff, #c878ff); color: #fff;
+                      box-shadow: 0 0 25px rgba(200, 120, 255, 0.6); }
+.rarity-badge.r-ssr { background: linear-gradient(90deg, #ffaa00, #ffd700, #ffaa00);
+                      color: #4a2800;
+                      box-shadow: 0 0 40px rgba(255, 215, 0, 0.9);
+                      animation: ssr-glow 1.2s ease-in-out infinite alternate; }
+@keyframes ssr-glow {
+    to { box-shadow: 0 0 60px rgba(255, 215, 0, 1); }
+}
+
+#result.show.rarity-ssr .item-name {
+    background: linear-gradient(90deg, #ff6ec7, #ffd700, #ff6ec7);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 2s linear infinite;
+}
+
+#burst.rarity-n   { background: radial-gradient(circle, rgba(200,200,200,0.4) 0%, transparent 60%); }
+#burst.rarity-r   { background: radial-gradient(circle, rgba(111,179,255,0.6) 0%, transparent 60%); }
+#burst.rarity-sr  { background: radial-gradient(circle, rgba(200,120,255,0.8) 0%, transparent 60%); }
+#burst.rarity-ssr { background: radial-gradient(circle, rgba(255,215,0,1) 0%, rgba(255,110,199,0.6) 30%, transparent 60%); }
+
+/* ===== コントロール ===== */
+.controls {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
+button {
+    font-family: inherit;
+    font-size: 1.1em;
+    font-weight: bold;
+    padding: 14px 36px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #ff6ec7, #b366ff);
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(179, 102, 255, 0.5);
+    transition: transform 0.15s, box-shadow 0.15s;
+    letter-spacing: 0.1em;
+}
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px rgba(179, 102, 255, 0.8);
+}
+button:active { transform: translateY(0); }
+button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
+button.secondary {
+    background: rgba(120, 100, 160, 0.4);
+    box-shadow: none;
+}
+button.secondary:hover {
+    background: rgba(120, 100, 160, 0.7);
+    box-shadow: none;
+}
+
+/* レート表示 */
+.rates {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 20px;
+    font-size: 0.9em;
+    color: #aaa;
+}
+.rate {
+    padding: 4px 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+}
+
+/* ===== 保管庫 ===== */
+#inventory-area {
+    background: rgba(20, 12, 40, 0.6);
+    border: 1px solid rgba(155, 100, 255, 0.2);
+    border-radius: 16px;
+    padding: 30px;
+    backdrop-filter: blur(8px);
+    max-height: 600px;
+    overflow-y: auto;
+}
+#inventory-area h2 {
+    margin-bottom: 16px;
+    color: #d0c0ff;
+    font-size: 1.3em;
+}
+
+.inv-section {
+    margin-bottom: 18px;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(0,0,0,0.25);
+    border-left: 4px solid;
+}
+.inv-section.r-n   { border-color: #aaa; }
+.inv-section.r-r   { border-color: #6fb3ff; }
+.inv-section.r-sr  { border-color: #c878ff; box-shadow: 0 0 15px rgba(200,120,255,0.2); }
+.inv-section.r-ssr { border-color: #ffd700; box-shadow: 0 0 20px rgba(255,215,0,0.4); }
+
+.inv-section h3 {
+    display: inline-block;
+    padding: 2px 12px;
+    border-radius: 10px;
+    font-size: 0.85em;
+    margin-bottom: 8px;
+    letter-spacing: 0.15em;
+}
+.inv-section.r-n   h3 { background: #555; color: #ddd; }
+.inv-section.r-r   h3 { background: #4a8cff; color: #fff; }
+.inv-section.r-sr  h3 { background: #a050ff; color: #fff; }
+.inv-section.r-ssr h3 { background: linear-gradient(90deg, #ffaa00, #ffd700); color: #4a2800; }
+
+.inv-section ul {
+    list-style: none;
+}
+.inv-section li {
+    padding: 4px 8px;
+    color: #e0d8f0;
+    display: flex;
+    justify-content: space-between;
+}
+.inv-section li .count {
+    color: #aaa;
+    font-variant-numeric: tabular-nums;
+}
+
+.empty {
+    color: #7a6a9a;
+    text-align: center;
+    padding: 40px 0;
+    font-style: italic;
+}
+
+@media (max-width: 800px) {
+    main { grid-template-columns: 1fr; }
+}

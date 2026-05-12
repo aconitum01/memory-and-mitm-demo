@@ -1,0 +1,64 @@
+# techtalk: ゲームチートデモ
+#
+# 使い方:
+#   # オンライン版（サーバーとチートプロキシを同時起動）
+#   docker compose --profile online up
+#       → http://localhost:8080   健全モード（サーバー直）
+#       → http://localhost:8081   チートモード（プロキシ越し）
+#
+#   # オフライン版（対話デモ。コンテナを立ち上げて exec で入る）
+#   docker compose --profile offline up -d
+#   docker compose exec offline ./game                              # ターミナル A
+#   docker compose exec offline bash -c './cheat $(pgrep game)'     # ターミナル B
+
+x-online-image: &online-image
+  build: ./online
+  image: techtalk-online:latest
+
+# ネットワークを意図的に 2 つに分ける:
+#   backend   = ゲームサーバー側のネットワーク
+#   player-pc = プレイヤーの PC を表すネットワーク
+# チートプロキシは backend に居ないので、サーバーには公開ポート
+# (host.docker.internal:8080) 経由でしか到達できない。
+# つまり「プレイヤーの PC で動いている MITM プロキシ」と同じ立ち位置。
+networks:
+  backend:
+  player-pc:
+
+services:
+  # ----- offline 版 -----
+  offline:
+    profiles: [offline]
+    build: ./offline
+    image: techtalk-offline:latest
+    cap_add:
+      - SYS_PTRACE         # /proc/<pid>/mem を読み書きするため
+    tty: true
+    stdin_open: true
+    command: [sleep, infinity]
+
+  # ----- online: 健全ガチャサーバー（公開ポート 8080） -----
+  online-server:
+    <<: *online-image
+    profiles: [online]
+    container_name: gacha-server
+    networks: [backend]
+    ports:
+      - "8080:8080"
+    command: [./server, --port, "8080", --bind, "0.0.0.0"]
+
+  # ----- online: プレイヤーの PC で動く MITM チートプロキシ（公開ポート 8081） -----
+  # backend には繋がっていない。サーバーには host.docker.internal:8080
+  # 経由（= ホストの公開ポート経由）でしか到達できない。
+  player-pc-cheat:
+    <<: *online-image
+    profiles: [online]
+    container_name: player-pc-cheat
+    networks: [player-pc]
+    depends_on:
+      - online-server
+    ports:
+      - "8081:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # Linux 用（Mac/Win は自動）
+    command: [./cheat, "8080", "8080", "host.docker.internal", --bind, "0.0.0.0"]

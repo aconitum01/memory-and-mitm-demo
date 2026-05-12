@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚔ ガチャ・オブ・デスティニー ⚔</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="stars"></div>
+
+    <header>
+        <h1>⚔ ガチャ・オブ・デスティニー ⚔</h1>
+        <p class="subtitle">SERVER-AUTHENTICATED GACHA SYSTEM v1.0</p>
+    </header>
+
+    <main>
+        <section id="gacha-area">
+            <div id="stage">
+                <div id="capsule" class="idle">
+                    <div class="capsule-top"></div>
+                    <div class="capsule-bottom"></div>
+                    <div class="capsule-shine"></div>
+                </div>
+                <div id="burst"></div>
+                <div id="result" class="hidden">
+                    <div class="rarity-badge"></div>
+                    <div class="item-name"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="roll-btn">ガチャを引く</button>
+                <button id="reset-btn" class="secondary">リセット</button>
+            </div>
+
+            <div class="rates">
+                <span class="rate r-n">N 60%</span>
+                <span class="rate r-r">R 25%</span>
+                <span class="rate r-sr">SR 12%</span>
+                <span class="rate r-ssr">SSR 3%</span>
+            </div>
+        </section>
+
+        <section id="inventory-area">
+            <h2>保管庫</h2>
+            <div id="inventory">
+                <p class="empty">まだ何もありません</p>
+            </div>
+        </section>
+    </main>
+
+    <script src="/app.js"></script>
+</body>
+</html>

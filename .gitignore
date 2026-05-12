@@ -1,0 +1,9 @@
+*.local.*
+.notes/
+
+# build artifacts
+offline/game
+offline/cheat
+online/server
+online/cheat
+*.o
